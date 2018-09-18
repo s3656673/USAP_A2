@@ -1,0 +1,5 @@
+HOW TO COMMIT AND PUSH:
+git add *
+IF NEEDINGT TO REMOVE FROM GITHUB : github rm -r <Folder Name>
+git commit -m "Whatever message"
+git push
