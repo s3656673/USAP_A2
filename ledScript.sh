@@ -105,6 +105,11 @@ if [ $choice -eq 3 ]
 then
 associateEvent
 fi
+#If choice is 4, call associateProcess
+if [ $choice -eq 4 ]
+then
+	associateProcess
+fi	
 #If choice is 6, go back to main menu
 if [ $choice -eq 6 ]
 then
@@ -156,6 +161,18 @@ if [ $choice -eq $quitNum ]
 then
 ledManipulation
 fi
+}
+
+#Function to associate an LED with a system process
+associateProcess()
+{
+echo "Associate LED with the performance of a process"
+echo "==============================================="
+read -p "Please enter the name of the program to monitor(partial names are ok:) " $program
+
+#CHECK IF NAME EXISTS WITH PS
+
+read -p "Do you wish to 1) monitor memory or 2) monitor cpu? [enter memory or cpu]: " $programType
 }
 #Call main menu
 mainMenu
