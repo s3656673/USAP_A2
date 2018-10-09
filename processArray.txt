@@ -1,4 +1,4 @@
 SMIO
 ledScript.sh
 bgScript.sh
-bgScript.sh
+chromium-foobar

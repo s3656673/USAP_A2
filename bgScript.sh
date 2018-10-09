@@ -23,16 +23,37 @@ then
 
 #store values into an array
 IFS=$(echo -en "\n\b")
-targets=$(ps -A | grep $processName | awk '{ print $1, $4 }')
+targets=$(ps -A | grep $processName | awk '{ print $4 }')
 num=1
 echo "$targets" > testfile.txt
-IFS=,$'\n' read -d '' -r -a processArray <testfile.txt
+cat -n testfile.txt | sort -uk2 | sort -nk1 | cut -f2- > processArray.txt
+echo chromium-foobar >> processArray.txt
+IFS=,$'\n' read -d '' -r -a processArray <processArray.txt
 
-#Print array elements to screen
-num=1
+#Calculate lines and check for any repeats
+checkNum=1
+for each in "${processArray[@]}"
+do
+let "checkNum=checkNum+1"
+done
+fi
+
+#If a name conflict occurs, let the user choose which program to monitor
+if [[ "$checkNum" -gt 2 ]]
+then
+echo "I have detected a name conflict. Do you want to monitor: "
 for each in "${processArray[@]}"
 do
 echo "$num. $each"
 let "num=num+1"
+quitOption=0
+let "quitOption=num"
 done
+echo "$quitOption. Cancel Request"
+read -p "Please enter your option (1-$quitOption): " choice
+
+if [[ $choice -eq $quitOption ]]
+then
+echo "Choice terminated"
+fi
 fi

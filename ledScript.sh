@@ -168,11 +168,12 @@ associateProcess()
 {
 echo "Associate LED with the performance of a process"
 echo "==============================================="
-read -p "Please enter the name of the program to monitor(partial names are ok:) " $program
+read -p "Please enter the name of the program to monitor(partial names are ok:) " program
 
 #CHECK IF NAME EXISTS WITH PS
-
-read -p "Do you wish to 1) monitor memory or 2) monitor cpu? [enter memory or cpu]: " $programType
+cd /home/pi/USAP_A2
+./bgScript.sh "$program"
+read -p "Do you wish to 1) monitor memory or 2) monitor cpu? [enter memory or cpu]: " programType
 }
 #Call main menu
 mainMenu
