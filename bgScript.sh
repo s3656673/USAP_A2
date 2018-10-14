@@ -1,9 +1,82 @@
 #!/bin/bash
 #Background script to find processes.
+keepChecking()
+{
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
+while true
+do
+cd "$DIR"
+#Check memory or cpu usage of a process
+processNumFloat=0
+processNum=0
+program=$(<program.txt)
+sleepTime=null
+#IFS=,$'\n' read -d '' -r -a processArray <processArray.txt
+if [[ "$1" = "memory" ]]
+then
+ps -C "$program" -o %mem > processCheck.txt
+fi
+
+if [[ "$1" = "cpu" ]]
+then
+ps -C "$program" -o %cpu > processCheck.txt
+fi
+
+grep -o '[0.0-9.9]*' processCheck.txt > processNumbers.txt
+cat processNumbers.txt | awk '{ sum+=$1} END {print sum}' > avg.txt
+processNumFloat=$(<avg.txt)
+processNum=${processNumFloat%.*}
+#echo "sum is $processNum"
+
+
+#Check range between 1 and 24
+if (("$processNum" >=1 && "$processNum" <=24));
+then
+sleepTime=5
+fi
+
+#Check range between 25 and 49
+if (("$processNum" >=25 && "$processNum" <=49));
+then
+sleepTime=2
+fi
+
+#Check ranges between 50 and 74
+if (("$processNum" >=50 && "$processNum" <=74));
+then
+sleepTime=1
+fi
+
+#Check ranges between 75 and 99
+if (("$processNum" >=75 && "$processNum" <=99));
+then
+sleepTime=.5
+fi
+
+cd "$2"
+echo 1 > brightness
+sleep .5
+echo 0 > brightness
+sleep $sleepTime
+echo 1 > brightness
+sleep .5
+echo 0 > brightness
+sleep $sleepTime
+
+done
+}
+
+
+
 
 #Assign the given process name argument into a variable
 processName=$1
 
+if [[ "$1" == "true" ]]
+then
+keepChecking "$2" "$3"
+fi
 #Declare global variables
 found=false
 
@@ -14,6 +87,7 @@ pgrep "$processName" > /dev/null || found=false
 if [ "$found" == "false" ]
 then
 echo "process not found"
+exit 1
 fi
 
 #Invoke the PS command and return the results with the process name
@@ -51,9 +125,13 @@ let "quitOption=num"
 done
 echo "$quitOption. Cancel Request"
 read -p "Please enter your option (1-$quitOption): " choice
-
 if [[ $choice -eq $quitOption ]]
 then
-echo "Choice terminated"
+exit 1
 fi
+let choice=choice-1
+echo "${processArray[choice]}" > program.txt
 fi
+
+
+

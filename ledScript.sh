@@ -3,7 +3,9 @@
 #Unix Systems Administration and Programming - Assignment 02
 
 #Global variables
-
+ledDirectory=null
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+ledChoice=null
 #Populate contents
 cd /sys/class/leds
 i=0
@@ -42,29 +44,29 @@ proceed=true
 let quitNum="$contents+1"
 echo $num"." "Quit"
 	#Read option from user, then call the LED manipulation menu
-	read -p "Please enter a number (1-$quitNum) for the led to configure or quit: " choice
+	read -p "Please enter a number (1-$quitNum) for the led to configure or quit: " ledChoice
 
 	#Check number input,
-	if [ $choice -le 0 ]
+	if [ $ledChoice -le 0 ]
 	then
 	echo "Invalid option, please try again"
 	proceed=false
 	mainMenu
 	fi
-	if [ $choice -gt $quitNum ]
+	if [ $ledChoice -gt $quitNum ]
 	then
 	echo "Invalid option, please try again"
 	proceed=false
 	mainMenu
 	fi
-	if [ $choice -eq $quitNum ]
+	if [ $ledChoice -eq $quitNum ]
 	then
 	echo "G00dbye, see y0u next time!"
 	exit 0
 	fi
 	if [ "$proceed" = "true" ]
 	then
-	ledManipulation $choice
+	ledManipulation $ledChoice
 	fi
 }
 
@@ -73,12 +75,13 @@ echo $num"." "Quit"
 ledManipulation(){
 trap 'forceQuit' 2
 #Retrieve choice number, and retrieve LED name from array element
-ledNum="$1"
+ledNum="$ledChoice"
 let "ledNum=ledNum-1"
 led="${array[ledNum]}"
 
 #Manipulation menu Icons
 cd /sys/class/leds/$led
+ledDirectory="/sys/class/leds/$led"
 echo "$led"
 echo "==========="
 echo "What would you like to do with this led?"
@@ -94,11 +97,13 @@ read -p "Please enter a number (1-6) for your choice: " choice
 if [ $choice -eq 1 ]
 then
 turnOnLed
+ledManipulation
 fi
 #If choice is 2, call the turn off led function
 if [ $choice -eq 2 ]
 then
 turnOffLed
+ledManipulation
 fi
 #If choice is 3, call associateEvent
 if [ $choice -eq 3 ]
@@ -110,6 +115,11 @@ if [ $choice -eq 4 ]
 then
 	associateProcess
 fi	
+#If choice is 5, call stopAssoicateProcess
+if [ $choice -eq 5 ]
+then
+stopAssociateProcess
+fi
 #If choice is 6, go back to main menu
 if [ $choice -eq 6 ]
 then
@@ -156,6 +166,7 @@ echo "$quitNum. Quit to previous menu"
 read -p "Please select an option (1-$quitNum): " choice
 echo ${eventArray[$choice-1]}>trigger
 echo "LED now associated with ${eventArray[$choice-1]}"
+ledManipulation
 #If choice is quitNum, go back to previous menu
 if [ $choice -eq $quitNum ]
 then
@@ -171,9 +182,28 @@ echo "==============================================="
 read -p "Please enter the name of the program to monitor(partial names are ok:) " program
 
 #CHECK IF NAME EXISTS WITH PS
-cd /home/pi/USAP_A2
+cd "$DIR"
 ./bgScript.sh "$program"
-read -p "Do you wish to 1) monitor memory or 2) monitor cpu? [enter memory or cpu]: " programType
+ret_code=$?
+if [[ $ret_code -eq 1 ]]
+then
+ledManipulation
+fi
+read -p "Do you wish to 1) monitor memory or 2) monitor cpu? [enter memory or cpu]: " monitorType
+./bgScript.sh "true" "$monitorType" "$ledDirectory" &
+ledManipulation
+}
+
+#Stop system process association with LED
+stopAssociateProcess()
+{
+pkill -f bgScript.sh >/dev/null
+ledManipulation
 }
 #Call main menu
 mainMenu
+
+
+
+
+
